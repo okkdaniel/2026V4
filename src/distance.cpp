@@ -1,82 +1,63 @@
-#include "lemlib/api.hpp"
-#include "pros/distance.hpp"
-#include "liblvgl/llemu.hpp"
-
-// positive # indicates closer to the wall, past the center of the robot in that plane, in inches
-const double BACK_SENSOR_OFFSET = 7.0;
-const double LEFT_SENSOR_OFFSET = 7.0;
-
-// change ts later if needed in inches
-const double FIELD_HALF = 72.0;
-
-pros::Distance backSensor(10);
-pros::Distance leftSensor(1);
-
-extern lemlib::Chassis chassis;
+#include "distance.hpp"
 
 void localize(bool useBack = true, bool useLeft = true, double maxDist = 60.0)
 {
-    lemlib::Pose currentPose = chassis.getPose();
-    double headingRad = currentPose.theta * M_PI/180.0; // conversion to radians
+    lemlib::Pose pose = chassis.getPose();
 
-    double newX = currentPose.x;
-    double newY = currentPose.y;
+    double headingRad = pose.theta * M_PI/180.0; // conversion to radians
+
+    double correctedX = pose.x;
+    double correctedY = pose.y;
+
+    const double ALIGN_THRESHOLD = 0.9; // is the robot parallel to wall?
+    const double BLEND = 0.4; // how much to correct the pose by
+
+    auto applyCorrection = [&](double sensorDist,
+                                         double sensorAngle,
+                                         double sensorOffset){
+        
+        if(sensorDist <= 0 || sensorDist >= maxDist) return;
+        
+        double dx = sin(sensorAngle);
+        double dy = cos(sensorAngle);
+
+        double sensorX = pose.x + sensorOffset * sin(sensorAngle);
+        double sensorY = pose.y + sensorOffset * cos(sensorAngle);
+
+        if (fabs(dy) > ALIGN_THRESHOLD)
+        {
+            double wallY = (dy < 0) ? -FIELD_HALF : FIELD_HALF;
+
+            double calculatedRobotY =
+                wallY - sensorDist * dy - (sensorY - pose.y);
+
+            correctedY = pose.y + (calculatedRobotY - pose.y) * BLEND; // corrects y pose and blends with current
+        }
+
+        else if(fabs(dx) > ALIGN_THRESHOLD)
+        {
+            double wallX = (dx < 0)  ? -FIELD_HALF : FIELD_HALF;
+
+            double calculatedRobotX =
+                wallX - sensorDist * dx - (sensorX - pose.x);
+
+            correctedX = pose.x + (calculatedRobotX - pose.x) * BLEND; // corrects x pose and blends with current
+        }
+    };
 
     if(useBack)
     {
-        double rawBack = backSensor.get()/25.4; // convert from mm to inches
-
-        if(rawBack > 0 && rawBack < maxDist)
-        {
-            //correct for small heading errors
-            double backAngle = headingRad * M_PI;
-
-            double sensorX = currentPose.x + BACK_SENSOR_OFFSET * sin(headingRad - M_PI);
-            double sensorY = currentPose.y + BACK_SENSOR_OFFSET * cos(headingRad - M_PI);
-
-            double dx = sin(backAngle);
-            double dy = cos(backAngle);
-
-            if(fabs(dy)>fabs(dx))
-            {
-                double wallY = (dy<0) ? -FIELD_HALF:FIELD_HALF;
-                newY = wallY - rawBack * dy - (sensorY - currentPose.y);
-            }
-            else 
-            {
-                double wallX = (dx<0) ? -FIELD_HALF:FIELD_HALF;
-                newX = wallX - rawBack * dx - (sensorX - currentPose.x);
-            }
-        }
+        double backDist = backSensor.get() / 25.4; // convert from mm to inches
+        double backAngle = headingRad + M_PI; // faces backwards so add 180 degrees
+        applyCorrection(backDist, backAngle, BACK_SENSOR_OFFSET);
     }
 
     if(useLeft)
     {
-        double rawLeft = leftSensor.get()/25.4; // convert from mm to inches
-
-        if(rawLeft > 0 && rawLeft < maxDist)
-        {
-            //correct for small heading errors
-            double leftAngle = headingRad - M_PI/2.0;
-
-            double sensorX = currentPose.x + LEFT_SENSOR_OFFSET * sin(leftAngle);
-            double sensorY = currentPose.y + LEFT_SENSOR_OFFSET * cos(leftAngle);
-
-            double dx = sin(leftAngle);
-            double dy = cos(leftAngle);
-
-            if(fabs(dy)>fabs(dx))
-            {
-                double wallY = (dy<0) ? -FIELD_HALF:FIELD_HALF;
-                newY = wallY - rawLeft * dy - (sensorY - currentPose.y);
-            }
-            else 
-            {
-                double wallX = (dx<0) ? -FIELD_HALF:FIELD_HALF;
-                newX = wallX - rawLeft * dx - (sensorX - currentPose.x);
-            }
-        }
+        double leftDist = leftSensor.get() / 25.4; // convert from mm to inches
+        double leftAngle = headingRad - M_PI / 2.0; // faces left so subtract 90 degrees
+        applyCorrection(leftDist, leftAngle, LEFT_SENSOR_OFFSET);
     }
 
-    chassis.setPose(newX, newY, currentPose.theta);
+    chassis.setPose(correctedX, correctedY, pose.theta);
 }
