@@ -22,5 +22,5 @@ enum intakeStates {
 
 extern void intakeStateMachine();
 extern void setIntake(int speed);
-extern void setPitons(bool tri1, bool tri2);
+extern void setPitons(bool tri1, bool tri2, bool shared);
 extern void intakeTelemetry();
