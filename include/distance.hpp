@@ -12,3 +12,5 @@ inline pros::Distance backSensor(10);
 inline pros::Distance leftSensor(1);
 
 extern lemlib::Chassis chassis; // reference the chassis so we can use lem functions
+
+void localize(bool useBack, bool useLeft, double maxDist);
