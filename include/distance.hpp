@@ -3,8 +3,8 @@
 #include "pros/distance.hpp"
 
 // positive # indicates sensor is closer to the wall in inches
-const double BACK_SENSOR_OFFSET = 7.0;
-const double LEFT_SENSOR_OFFSET = 7.0;
+const double BACK_SENSOR_OFFSET = 2.0;
+const double LEFT_SENSOR_OFFSET = 5.0;
 
 const double FIELD_HALF = 72.0;
 

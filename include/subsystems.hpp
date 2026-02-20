@@ -10,7 +10,7 @@ inline pros::adi::DigitalOut tristate1('C');
 inline pros::adi::DigitalOut tristate2('D');
 inline pros::adi::DigitalOut outtakesharing('E');
 
-inline pros::Controller master(pros::E_CONTROLLER_MASTER);
+inline pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
 inline const int INTAKE_SPEED = 12000;
 inline const int OUTTAKE_SPEED = -12000;
@@ -24,7 +24,14 @@ enum intakeStates {
     MID_SCORE = 4
 };
 
-extern void intakeStateMachine();
+void intakeStateMachine();
 extern void setIntake(int speed);
 extern void setPitons(bool tri1, bool tri2, bool shared);
+extern void midControl(bool state);
+extern void wingControl(bool state);
+extern void loaderControl(bool state);
+
 extern void intakeTelemetry();
+extern void midTeleControl();  
+extern void wingTeleControl();
+extern void loaderTeleControl();
