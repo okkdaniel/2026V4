@@ -25,22 +25,22 @@ void intakeStateMachine() {
 
     } else if (intakeState == INTAKING) {
 
-        setIntake(12000);
+        setIntake(INTAKE_SPEED);
         setPistons(true, false, false);
 
     } else if (intakeState == OUTTAKING) {
 
-        setIntake(-12000);
+        setIntake(OUTTAKE_SPEED);
         setPistons(true, false, true);
 
     } else if (intakeState == HIGH_SCORE) {
 
-        setIntake(12000);
+        setIntake(INTAKE_SPEED);
         setPistons(false, false, false);
 
     } else if (intakeState == MID_SCORE) {
 
-        setIntake(12000);
+        setIntake(MID_SPEED);
         setPistons(true, true, false);
 
     }

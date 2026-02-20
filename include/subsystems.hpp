@@ -12,6 +12,10 @@ inline pros::adi::DigitalOut outtakesharing('E');
 
 inline pros::Controller master(pros::E_CONTROLLER_MASTER);
 
+inline const int INTAKE_SPEED = 12000;
+inline const int OUTTAKE_SPEED = -12000;
+inline const int MID_SPEED = 7000;
+
 enum intakeStates {
     IDLE = 0,
     INTAKING = 1, 
