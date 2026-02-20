@@ -4,13 +4,13 @@ void localize(bool useBack = true, bool useLeft = true, double maxDist = 60.0)
 {
     lemlib::Pose pose = chassis.getPose();
 
-    double headingRad = pose.theta * M_PI/180.0; // conversion to radians
+    double headingRad = pose.theta * M_PI/180.0; // convert to radians
 
     double correctedX = pose.x;
     double correctedY = pose.y;
 
     const double ALIGN_THRESHOLD = 0.9; // is the robot parallel to wall?
-    const double BLEND = 0.4; // how much to correct the pose by
+    const double BLEND = 0.4; // how much to correct the pose by, make it closer to one if we trust the sensors more than lem odom
 
     auto applyCorrection = [&](double sensorDist,
                                          double sensorAngle,
