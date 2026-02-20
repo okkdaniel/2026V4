@@ -1,17 +1,16 @@
 #include "main.h"
-#include "lemlib/api.hpp" // IWYU pragma: keep
+#include "lemlib/api.hpp"
 #include "subsystems.hpp"
 
 int intakeState = intakeStates::IDLE;
 
-void setIntake(int speed) 
+void setIntake(int speed)
 {
     intake.move_voltage(speed);
 }
 
-//pistons for the flipdown, wing, and tristate
-
-void setPistons(bool tri1, bool tri2, bool shared) {
+void setPistons(bool tri1, bool tri2, bool shared)
+{
         tristate1.set_value(tri1);
         tristate2.set_value(tri2);
         outtakesharing.set_value(shared);
